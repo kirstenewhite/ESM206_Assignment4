@@ -5,26 +5,101 @@ date: "11/4/2021"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+# Introduction 
+
+----A 4 - 5 sentence "mini-introduction" to what this study is exploring, including basic background information about the subject, site and study (with citations as needed), and a brief overview of what is included in the exploratory report. You should probably do this last so you know what’s contained in the report.----
+
+### Setup
+
+```{r setup, include= TRUE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+# --- Attach Packages ---
+library(tidyverse)
+library(here)
+library(janitor)
+library(lubridate) 
+library(kableExtra)
 ```
 
-## R Markdown
+### Read in the Data
+```{r}
+bonanza_hares <- read_csv(here("data", "bonanza_hares.csv"))
+```
+# Data & Analysis 
+---- A 3 - 4 sentence section in which you briefly describe the data, including citation & credit as needed, and provide an overview of the main analysis, statistical methods and tools used.---
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+-----Juvenile snowshoe hare size and count data is explored, analyzed, and visualized. This data was collected from the Bonanza Creek LTER, part of the US Long Term Ecological Research Network, between 1998 and 2012. 
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+**Data Citation**: Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14-----
 
-```{r cars}
-summary(cars)
+
+# Juvenile Hare Trapping Counts 
+In this section, the total number of juvenile hare trappings during each year of the study are counted and visualized. 
+
+### Data Wrangling 
+Juvenile hare trappings are counted by year. 
+
+```{r}
+juvenile_trappings <- bonanza_hares %>%
+  mutate(date = mdy(date)) %>%
+  mutate(year = year(date)) %>%
+  filter(age == "j") %>%
+  group_by(year, age) %>%
+  count(age)
+  
 ```
 
-## Including Plots
+### Data Visualization 
+```{r}
+ggplot(data = juvenile_trappings, aes(x = year, y = n)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "grey", width = 0.5) + 
+  labs(x = "Year", 
+       y = "Hare Count", 
+       title = "Total Juvenile Hares Trapped by Year (1998 - 2012)",
+       caption = "Figure 1: Total number of juvenile hares trapped per year from 1998 through 2012") + 
+  theme_grey() + 
+  theme(plot.title = element_text(face = "bold", hjust = 0.5, size = 15)) + 
+  theme(axis.title = element_text(face = "bold"))
+       
+```
+### Summary Table & Discussion
+---- CHANGE (J) TO JUVENILE ----
 
-You can also embed plots, for example:
+```{r}
+juvenile_trappings_summary <- juvenile_trappings %>%
+  group_by(age) %>%
+  summarize(min(juvenile_trappings$n), 
+            max(juvenile_trappings$n), 
+            mean(juvenile_trappings$n), 
+            median(juvenile_trappings$n)) %>%
+  kbl(caption = "Table 1: Summary statistics for juvenile hare counts from 1998 - 2012", col.names = c("Age", "min", "max", "mean", "median")) %>%
+  kable_minimal()
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+juvenile_trappings_summary
+```
+As seen in Table 1, ------ Then, in 3 - 4 sentences below your figure, describe major takeaways from your graph about total snowshoe hare trappings at the site. You might consider:------
+
+# Juvenile Hare Weights
+In this section, juvenile hare weights are compared by sex and site then visualized. 
+
+### Data Wrangling 
+```{r}
+juvenile_weights <- bonanza_hares %>%
+  filter(age == "j") %>%
+  select(sex, weight, grid)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+### Data Visualization 
+
+```{r}
+ggplot(data = juvenile_weights, aes(x = sex, y = weight, color = grid))+
+  geom_jitter(width = 0.1, size = 0.9)+
+  facet_wrap(~ grid) +
+   labs(x = "Sex", 
+       y = "Weight", 
+       color = "Site",
+       title = "Juvenile Hare Weight by Sex and Site (WHITE)")
+```
+
+
