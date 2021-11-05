@@ -2,10 +2,14 @@
 title: "ESM 206 Assignment 4"
 author: "Kirsten White"
 date: "11/4/2021"
-output: html_document
+output: 
+  html_document: 
+    theme: flatly
+    toc: yes
+    highlight: haddock
 ---
 
-# Introduction 
+# **Introduction** 
 
 ----A 4 - 5 sentence "mini-introduction" to what this study is exploring, including basic background information about the subject, site and study (with citations as needed), and a brief overview of what is included in the exploratory report. You should probably do this last so you know what’s contained in the report.----
 
@@ -20,13 +24,14 @@ library(here)
 library(janitor)
 library(lubridate) 
 library(kableExtra)
+library(effsize)
 ```
 
 ### Read in the Data
 ```{r}
 bonanza_hares <- read_csv(here("data", "bonanza_hares.csv"))
 ```
-# Data & Analysis 
+# **Data & Analysis** 
 ---- A 3 - 4 sentence section in which you briefly describe the data, including citation & credit as needed, and provide an overview of the main analysis, statistical methods and tools used.---
 
 -----Juvenile snowshoe hare size and count data is explored, analyzed, and visualized. This data was collected from the Bonanza Creek LTER, part of the US Long Term Ecological Research Network, between 1998 and 2012. 
@@ -34,13 +39,14 @@ bonanza_hares <- read_csv(here("data", "bonanza_hares.csv"))
 **Data Citation**: Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14-----
 
 
-# Juvenile Hare Trapping Counts 
-In this section, the total number of juvenile hare trappings during each year of the study are counted and visualized. 
+# **Part 1: Juvenile Hare Trapping Counts**
+In this section, the total number of juvenile snowshoe hare trappings during each year of the study are explored and visualized. 
 
 ### Data Wrangling 
 Juvenile hare trappings are counted by year. 
 
 ```{r}
+# A dataset including only juvenile hares, a new year column, and counting total juveniles per year is created 
 juvenile_trappings <- bonanza_hares %>%
   mutate(date = mdy(date)) %>%
   mutate(year = year(date)) %>%
@@ -51,25 +57,32 @@ juvenile_trappings <- bonanza_hares %>%
 ```
 
 ### Data Visualization 
+Juvenile hare trappings by year are visualized in a bar graph. 
+
 ```{r}
+# A bar graph is plotted with counts on the y-axis and year on the x-axis
 ggplot(data = juvenile_trappings, aes(x = year, y = n)) +
   geom_bar(stat = "identity", fill = "skyblue", color = "grey", width = 0.5) + 
+# Graph title, axis, and caption are labeled 
   labs(x = "Year", 
        y = "Hare Count", 
-       title = "Total Juvenile Hares Trapped by Year (1998 - 2012)",
+       title = "Total Juvenile Snowshoe Hares Trapped by Year (1998 - 2012) (WHITE)",
        caption = "Data Source: Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017") + 
+# Title, axis, and caption font, size, and placement are edited 
   theme_grey() + 
-  theme(plot.title = element_text(face = "bold", hjust = 0.5, size = 15)) + 
+  theme(plot.title = element_text(face = "bold", hjust = 0.5, size = 12)) + 
   theme(axis.title = element_text(face = "bold")) +
   theme(plot.caption = element_text(hjust = 1, size = 8))
-       
 ```
+
 **Figure 1**: Total number of juvenile hares trapped per year from 1998 through 2012
 
+
 ### Summary Table & Discussion
----- CHANGE (J) TO JUVENILE ----
+Minimum, maximum, mean, median, and standard deviation of juvenile hare counts are calculated and visualized in a table. 
 
 ```{r}
+# Create a summary statistic table of juvenile hare counts by year
 juvenile_trappings_summary <- juvenile_trappings %>%
   group_by(age) %>%
   summarize(sample_size = n(), 
@@ -78,40 +91,49 @@ juvenile_trappings_summary <- juvenile_trappings %>%
             mean(juvenile_trappings$n, na.rm = TRUE), 
             median(juvenile_trappings$n, na.rm = TRUE), 
             sd(juvenile_trappings$n, na.rm = TRUE)) %>%
-  kbl(caption = "Table 1: Summary statistics for juvenile hare counts from 1998 - 2012", col.names = c("Age", "Sample Size", "Min", "Max", "Mean", "Median", "Standard Deviation"), digits = 1) %>%
+  kbl(caption = "Table 1: Summary statistics for juvenile hare counts from 1998 - 2012", 
+  col.names = c("Age", "Sample Size", "Min", "Max", "Mean", "Median", "Standard Deviation"), digits = 1) %>%
   kable_minimal()
 
 juvenile_trappings_summary
 ```
-As seen in Table 1, ------ Then, in 3 - 4 sentences below your figure, describe major takeaways from your graph about total snowshoe hare trappings at the site. You might consider:------
+As seen in **Table 1**, juvenile hares trapped over a 12 year span varied greatly. Generally, more juveniles were trapped in earlier years and number of juveniles trapped steadily decreased over time ranging 124 total from a maximum of 126 trapped in a year to a minimum of 2 trapped per year. The mean number of juveniles trapped is 31.5 while the median value is much lower at 18.5 juveniles trapped per year. 
 
-# Juvenile Hare Weights
-In this section, juvenile hare weights are compared by sex and site then visualized. 
+
+# **Part 2: Juvenile Hare Weights**
+In this section, juvenile snowshoe hare weights are compared by sex and site then visualized. 
 
 ### Data Wrangling 
+Data is wrangled to include observations on juvenile hares only and information on sex, weight, and grid (site). 
+
 ```{r}
+# Create a new dataset including only columns for sex, weight, and site (grid) and including observations of only juvenile hares
 juvenile_weights <- bonanza_hares %>%
   filter(age == "j") %>%
   select(sex, weight, grid) %>%
+# Add a new column with the full site name 
   mutate(grid_full = case_when(
         grid == "bonbs" ~ "Bonbs", 
         grid == "bonmat" ~ "Bonanza Mature", 
         grid == "bonrip" ~ "Bonanza Riparian")) %>%
+# Update the sex column to capitalized M and F for Male and Female 
   mutate(sex = case_when(
         sex == "m" ~ "M", 
         sex == "f" ~ "F"))
 ```
 
 ### Data Visualization 
+Juvenile male and female weights are visualized by site. 
 
 ```{r}
+# Create a scatterplot showing male and female juvenile hare weights separated by site
 ggplot(data = juvenile_weights, aes(x = sex, y = weight, color = grid_full))+
   geom_jitter(width = 0.05, size = 0.9, show.legend = "None") +
   facet_wrap(~ grid_full) +
    labs(x = "Sex", 
        y = "Weight (g)", 
        color = "Site",
-       title = "Juvenile Hare Weight by Sex and Site (WHITE)", 
+       title = "Juvenile Snowshoe Hare Weight by Sex and Site (WHITE)", 
        caption = "Data Source: Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017") + 
   theme(plot.title = element_text(face = "bold"))+
   theme(plot.caption = element_text(hjust = 1, size = 8))+
@@ -121,6 +143,10 @@ ggplot(data = juvenile_weights, aes(x = sex, y = weight, color = grid_full))+
 
 ---- EDIT Y AXIS LENGTH ----
 
+---Then, in 2 - 3 sentences below your visualization(s) describe in text the main takeaways that you would want the audience to understand from your figures.---- 
+
+### Summary Table & Discussion
+Mean, median, minimum, maximum, and standard deviation of male and female juvenile hare weights are calculated and visualized in a table. 
 ```{r}
 juvenile_weights_summary <- juvenile_weights %>%
   group_by(grid_full, sex) %>%
@@ -136,6 +162,79 @@ juvenile_weights_summary <- juvenile_weights %>%
 juvenile_weights_summary
 ```
 
-As represented in Figure 2 and Table 2, ------discuss what we see------
+**Table 2** depicts differences in juvenile hare weights by site. The table indicates a large disparity in sample sizes between each site. Mean female weight tends to be lower then male weights between all sites. Additionally, there is a high variation in weights between male and female juvenile hares. 
 
+#### Run a T-test,  Mann Whitney U unpaired rank-based test, and Cohen's D
+```{r}
+# Create vector of female weights 
+female_weights <- juvenile_weights %>%
+  filter(sex == "F") %>%
+  pull(weight)
+
+# Create vector of male weights
+male_weights <- juvenile_weights %>%
+  filter(sex == "M") %>%
+  pull(weight)
+
+# Run a two sample t-test on female versus male weights 
+# Asking the question: What is the probability that I would have found samples with means that are *at least as different as the ones I've found* by random chance, if they are drawn from populations with the same mean?
+weight_t_test <- t.test(female_weights, male_weights)
+weight_t_test # p = 0.7%
+
+# Run a Mann Whitney U unpaired rank-based test to compare ranks (medians) between two unpaired samples
+# This test investigates the difference in ranks (also called median comparisons) to determine if there is a signficant difference in ranks between the weight values of male and female juvenile hares. 
+weight_mwu <- wilcox.test(female_weights, male_weights)
+weight_mwu # p = 0.7%
+
+# Run a Cohen test
+weight_cohen <- cohen.d(female_weights, male_weights)
+weight_cohen #
+
+```
+### What do these tests mean? 
+
+The p-value found in this t-test is p = 0.007093. Meaning, that if these samples were actually drawn from populations with the same mean, the probability of getting samples at least as different as these samples by random chance is 0.7%. 
+
+Further, the Mann Whitney U p-value of 0.00782 calculated with the wilcox test means that if the null hypothesis were true and these samples were drawn from populations with the same median, then there is a probability of 0.00782 that we could have found median values at least as difference as ours by random chance. 
+
+Based on these results, the difference is significant enough to reject the null hypothesis that sample were drawn from populations with the same mean and median. We have sufficient evidence to accept the alternative hypothesis that these samples were taken from populations with unequal means and ranks. 
+
+### Exploratory graphs
+```{r}
+ggplot(data = juvenile_weights, aes(x = weight)) +
+  geom_histogram(bins = 10) +
+  facet_wrap(~ sex)
+
+ggplot(data = juvenile_weights, aes(sample = weight)) +
+  geom_qq() +
+  facet_wrap(~ sex)
+```
+
+# **Part 3: Juvenile Hare Weight & Hind Foot Length**
+In this section, the relationship between juvenile snowshoe hare hind foot length and weight is explored and visualized. 
+
+### Data Wrangling
+Data is wrangled to include only observations for juvenile hares with information on their hind foot length and weight. 
+
+```{r}
+# Weight and hindfoot data is selected. Data is filtered to include Observations for juveniles only. 
+juvenile_hfoot <- bonanza_hares %>%
+  filter(age == "j") %>%
+  select(weight, hindft)
+```
+
+### Data Visualization 
+Hindfoot versus weight data for juvenile hares is visualized. 
+```{r}
+ggplot(data = juvenile_hfoot, aes(x = hindft, y = weight)) +
+  geom_jitter() +
+  geom_smooth(method = "lm") +
+  labs(x = "Hindfoot Length (mm)", 
+       y = "Weight (g)", 
+       title = "Juvenile Hare Weight and Hindfoot Comparison (WHITE)", 
+       caption = "Data Source: Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017") +
+  theme(plot.title = element_text(face = "bold"))+
+  theme(plot.caption = element_text(hjust = 1, size = 8))+
+  theme(axis.title = element_text(face = "bold"))
+```
 
