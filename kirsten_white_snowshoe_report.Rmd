@@ -57,23 +57,28 @@ ggplot(data = juvenile_trappings, aes(x = year, y = n)) +
   labs(x = "Year", 
        y = "Hare Count", 
        title = "Total Juvenile Hares Trapped by Year (1998 - 2012)",
-       caption = "Figure 1: Total number of juvenile hares trapped per year from 1998 through 2012") + 
+       caption = "Data Source: Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017") + 
   theme_grey() + 
   theme(plot.title = element_text(face = "bold", hjust = 0.5, size = 15)) + 
-  theme(axis.title = element_text(face = "bold"))
+  theme(axis.title = element_text(face = "bold")) +
+  theme(plot.caption = element_text(hjust = 1, size = 8))
        
 ```
+**Figure 1**: Total number of juvenile hares trapped per year from 1998 through 2012
+
 ### Summary Table & Discussion
 ---- CHANGE (J) TO JUVENILE ----
 
 ```{r}
 juvenile_trappings_summary <- juvenile_trappings %>%
   group_by(age) %>%
-  summarize(min(juvenile_trappings$n), 
-            max(juvenile_trappings$n), 
-            mean(juvenile_trappings$n), 
-            median(juvenile_trappings$n)) %>%
-  kbl(caption = "Table 1: Summary statistics for juvenile hare counts from 1998 - 2012", col.names = c("Age", "min", "max", "mean", "median")) %>%
+  summarize(sample_size = n(), 
+            min(juvenile_trappings$n, na.rm = TRUE), 
+            max(juvenile_trappings$n, na.rm = TRUE), 
+            mean(juvenile_trappings$n, na.rm = TRUE), 
+            median(juvenile_trappings$n, na.rm = TRUE), 
+            sd(juvenile_trappings$n, na.rm = TRUE)) %>%
+  kbl(caption = "Table 1: Summary statistics for juvenile hare counts from 1998 - 2012", col.names = c("Age", "Sample Size", "Min", "Max", "Mean", "Median", "Standard Deviation"), digits = 1) %>%
   kable_minimal()
 
 juvenile_trappings_summary
@@ -87,19 +92,50 @@ In this section, juvenile hare weights are compared by sex and site then visuali
 ```{r}
 juvenile_weights <- bonanza_hares %>%
   filter(age == "j") %>%
-  select(sex, weight, grid)
+  select(sex, weight, grid) %>%
+  mutate(grid_full = case_when(
+        grid == "bonbs" ~ "Bonbs", 
+        grid == "bonmat" ~ "Bonanza Mature", 
+        grid == "bonrip" ~ "Bonanza Riparian")) %>%
+  mutate(sex = case_when(
+        sex == "m" ~ "M", 
+        sex == "f" ~ "F"))
 ```
 
 ### Data Visualization 
 
 ```{r}
-ggplot(data = juvenile_weights, aes(x = sex, y = weight, color = grid))+
-  geom_jitter(width = 0.1, size = 0.9)+
-  facet_wrap(~ grid) +
+ggplot(data = juvenile_weights, aes(x = sex, y = weight, color = grid_full))+
+  geom_jitter(width = 0.05, size = 0.9, show.legend = "None") +
+  facet_wrap(~ grid_full) +
    labs(x = "Sex", 
-       y = "Weight", 
+       y = "Weight (g)", 
        color = "Site",
-       title = "Juvenile Hare Weight by Sex and Site (WHITE)")
+       title = "Juvenile Hare Weight by Sex and Site (WHITE)", 
+       caption = "Data Source: Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017") + 
+  theme(plot.title = element_text(face = "bold"))+
+  theme(plot.caption = element_text(hjust = 1, size = 8))+
+  theme(axis.title = element_text(face = "bold")) 
 ```
+**Figure 2**: Female and male juvenile hare weights in grams visualized by sex and site
+
+---- EDIT Y AXIS LENGTH ----
+
+```{r}
+juvenile_weights_summary <- juvenile_weights %>%
+  group_by(grid_full, sex) %>%
+  summarize(sample_size = n(), 
+            mean_weight = mean(weight, na.rm = TRUE), 
+            median_weight = median(weight, na.rm = TRUE), 
+            min_weight = min(weight, na.rm = TRUE), 
+            max_weight = max(weight, na.rm = TRUE),
+            sd_weight = sd(weight, na.rm = TRUE)) %>%
+  kbl(caption = "Table 2: Summary statistics for male and female juvenile weights (g)", col.names = c("Site", "Sex","Sample Size", "Mean (g)", "Median (g)", "Min (g)", "Max (g)", "Standard Deviation (g)"), digits = 1) %>%
+  kable_minimal()
+
+juvenile_weights_summary
+```
+
+As represented in Figure 2 and Table 2, ------discuss what we see------
 
 
