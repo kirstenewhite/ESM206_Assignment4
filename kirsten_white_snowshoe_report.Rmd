@@ -7,6 +7,7 @@ output:
     theme: flatly
     toc: yes
     highlight: haddock
+    code_folding: hide
 ---
 
 # **Introduction** 
@@ -53,7 +54,6 @@ juvenile_trappings <- bonanza_hares %>%
   filter(age == "j") %>%
   group_by(year, age) %>%
   count(age)
-  
 ```
 
 ### Data Visualization 
@@ -233,8 +233,35 @@ ggplot(data = juvenile_hfoot, aes(x = hindft, y = weight)) +
        y = "Weight (g)", 
        title = "Juvenile Hare Weight and Hindfoot Comparison (WHITE)", 
        caption = "Data Source: Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017") +
-  theme(plot.title = element_text(face = "bold"))+
+  theme(plot.title = element_text(hjust = 0.4, face = "bold"))+
   theme(plot.caption = element_text(hjust = 1, size = 8))+
   theme(axis.title = element_text(face = "bold"))
 ```
 
+---
+At first glance, it does not appear that a linear relationship makes complete sense. Notable outliers exist as hind foot length increases and weight becomes less predictable. Based on this initial impression, the relationship appears heteroscedastic since the spread of residuals about the model changes in a non-random way over hindfoot length. 
+
+#### Linear Model 
+```{r}
+# Linear model, stored as hfoot_weight_lm
+hfoot_weight_lm <- lm(weight ~ hindft, data = juvenile_hfoot)
+
+# Return complete overview
+summary(hfoot_weight_lm)
+
+# Use broom::tidy() function to see the model outputs in a nice format
+hfoot_weight_lm_tidy <- broom::tidy(hfoot_weight_lm)
+
+hfoot_weight_lm_out <- broom::glance(hfoot_weight_lm)
+hfoot_weight_lm_out
+
+# Find Pearson's r value which indicates the strength of the correlation (degree of relationship) between weight and hindfoot length 
+hfoot_weight_cor <- cor.test(juvenile_hfoot$weight, juvenile_hfoot$hindft)
+```
+- The slope is `r round(hfoot_weight_lm$coefficient[2], 2)` (g/mm) and the y-intercept is `r round(hfoot_weight_lm$coefficient[1], 1)`  (g). The full equation is mass = `r round(hfoot_weight_lm$coefficient[2], 2)`*(hindfoot length) + (`r round(hfoot_weight_lm$coefficient[1], 1)`)
+
+- The R^2^ value of `r round(hfoot_weight_lm_out$r.squared)`means that 30% of the variance in hind foot length length is explained by weight. 
+
+- Here, we see that there is a [strong, weak, medium] [positive,etc] correlation between weight and hind foot length (*r* = `r round(hfoot_weight_cor$estimate, 1)`, t(`r round(hfoot_weight_cor$parameter)`) = `r round(hfoot_weight_cor$statistic)`, p < 0.001).
+
+- A simple linear regression was used to explore the relationship between hind foot length (mm) and body weight (g) across all juvenile snowshoe hares (male and female). A [significant/not significant] regression model was found with
