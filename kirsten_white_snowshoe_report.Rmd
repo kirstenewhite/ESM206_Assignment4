@@ -48,6 +48,7 @@ bonanza_hares <- read_csv(here("data", "bonanza_hares.csv"))
 Total number of juvenile snowshoe hares trapped during each year of the study (1998 - 2012) are visualized in a bar graph and a summary stastitics table.  
 
 ```{r}
+
 ### Data Wrangling 
 # Juvenile hare trappings are counted by year. 
 
@@ -108,6 +109,8 @@ juvenile_trappings_summary <- juvenile_trappings %>%
   kable_classic_2()
 
 juvenile_trappings_summary
+
+### EDIT J
 ```
 
 **Analysis**:  Over the 12 year period, total number of trappings varied greatly. At the beginning of the study (1998-1999), significantly more juveniles were trapped reaching a maximum of 126 hares per year and steadily decreased over time to a minimum of 2 hares trapped per year. The mean number of juveniles trapped per year was 31.5 while the median value, much more representative, was 18.5 hares trapped per year; total standard deviation was 35.9 hares trapped per year. See **Figure 1**, **Table 1**. In future analysis, data can be standardized by having equal sample sizes.
@@ -133,8 +136,8 @@ juvenile_weights <- bonanza_hares %>%
         grid == "bonrip" ~ "Bonanza Riparian")) %>%
 # Update the sex column to capitalized M and F for Male and Female 
   mutate(sex = case_when(
-        sex == "m" ~ "M", 
-        sex == "f" ~ "F"))
+        sex == "m" ~ "Male", 
+        sex == "f" ~ "Female"))
 ```
 
 
@@ -144,6 +147,7 @@ juvenile_weights <- bonanza_hares %>%
 
 # Create a scatterplot showing male and female juvenile hare weights separated by site
 ggplot(data = juvenile_weights, aes(x = sex, y = weight, color = grid_full))+
+  geom_boxplot(show.legend = "none")+
   geom_jitter(width = 0.1, show.legend = "none")+
   facet_wrap(~ grid_full) +
   scale_color_manual(values = c("aquamarine4", "goldenrod2", "tomato4"))+
@@ -158,7 +162,7 @@ ggplot(data = juvenile_weights, aes(x = sex, y = weight, color = grid_full))+
 ```
 
 
-**Figure 2**: Female and male juvenile hare weights are visualized by sex (female, male, and NA) and site, including: Mature (green), Riparian (gold), and Bonbs (maroon). Each point indicates an individual observation for a juvenile hare weight.
+**Figure 2**: Female and male juvenile hare weights are visualized by sex (female, male, and NA) and site, including: Mature (green), Riparian (gold), and Bonbs (maroon). Each point represents an individual observation for a juvenile hare weight. Box plots indicate the median, range, and outliers for each group. 
 
 **Table 2**: Summary statistics for male and female juvenile weights (g) separated by site
 ```{r}
@@ -189,13 +193,13 @@ juvenile_weights_summary
 
 # Create vector of female weights 
 female_weights <- juvenile_weights %>%
-  filter(sex == "F") %>%
+  filter(sex == "Female") %>%
   drop_na(weight) %>%
   pull(weight)
 
 # Create vector of male weights
 male_weights <- juvenile_weights %>%
-  filter(sex == "M") %>%
+  filter(sex == "Male") %>%
   drop_na(weight) %>%
   pull(weight)
 
@@ -339,4 +343,7 @@ Exploratory data analysis reveals the following:
 # **Citations**
   
 1) Data citation: Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
+
+*upadte j in table
+- add box and mean to graph 
   
