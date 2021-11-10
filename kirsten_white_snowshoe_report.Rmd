@@ -322,7 +322,7 @@ hfoot_weight_cor <- cor.test(juvenile_hfoot$weight, juvenile_hfoot$hindft)
 
 - The **slope** is `r round(hfoot_weight_lm$coefficient[2], 2)` (g/mm) and the **y-intercept** is `r round(hfoot_weight_lm$coefficient[1], 1)`  (g). The full equation is mass = `r round(hfoot_weight_lm$coefficient[2], 2)`*(hindfoot length) + (`r round(hfoot_weight_lm$coefficient[1], 1)`). 
 
-- The **R^2^ value** of `r round(hfoot_weight_lm_out$r.squared, 1)` means that 30% of the variance in hind foot length length is explained by weight. **Pearson's r correlation** is `r round(hfoot_weight_cor$estimate, 1)`. This R^2^ value indicates that hind foot length has a medium to moderate influence on hare weight. 
+- The **R^2^ value** of `r round(hfoot_weight_lm_out$r.squared, 1)` means that `r round(hfoot_weight_lm_out$r.squared * 100)`% of the variance in hind foot length length is explained by weight. **Pearson's r correlation** is `r round(hfoot_weight_cor$estimate, 1)`. This R^2^ value indicates that hind foot length has a medium to moderate influence on hare weight. 
 
 ---
 
